@@ -4,6 +4,8 @@ This file is an implementation of the SOM algorithm
 
 import numpy as np
 from pprint import pprint
+from sentiment_som import load_data
+from w2v import train_word2vec
 
 #Kernel Parameters
 size_x=8			#size of 1 kernel
@@ -17,8 +19,15 @@ nKernel_y=8
 learning_rate=0.1
 sigma=0.3
 
-inp=np.random.rand(size_x,size_y)
+#Word2Vec parameters
+embedding_dim=300
+min_word_count=1
+context=10
 
+#Loads the dataset matrices, the Word2Vec weights and the vocabulary
+x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
+embedding_weights = train_word2vec(np.vstack((x_train, x_test)), vocabulary_inv, num_features=embedding_dim,
+								   min_word_count=min_word_count, context=context)
 
 class SOM_Map:
 	def __init__(self,nKernel_y,nKernel_x,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
