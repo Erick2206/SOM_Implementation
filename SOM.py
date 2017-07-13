@@ -8,12 +8,11 @@ from sentiment_som import load_data
 from w2v import train_word2vec
 
 #Kernel Parameters
-size_x=8			#size of 1 kernel
-size_y=8
+size_x=3			#size of 1 kernel
+size_y=300
 
 #SOM Map parameters
-nKernel_x=8			#No of kernels on x and y axis on a SOM Map.
-nKernel_y=8
+nKernel_y=100 		#No of kernels on x and y axis on a SOM Map.
 
 #Training parameters
 learning_rate=0.1
@@ -24,10 +23,16 @@ embedding_dim=300
 min_word_count=1
 context=10
 
+#Convolution parameters
+ngram=3
+
 #Loads the dataset matrices, the Word2Vec weights and the vocabulary
 x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
 embedding_weights = train_word2vec(np.vstack((x_train, x_test)), vocabulary_inv, num_features=embedding_dim,
 								   min_word_count=min_word_count, context=context)
+
+print len(x_train)
+
 
 class SOM_Map:
 	def __init__(self,nKernel_y,nKernel_x,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
@@ -88,15 +93,6 @@ class SOM_Map:
 
  		return BMUCoordinates
 
-	def fit(self):
-		'''
-		Primary starting function of the Self Organizing Maps Network
-		Similar to fit function of sklearn library
-		'''
-		for i in range(self.num_iteration):
-			BMU=self.findBestMatchingUnit()
-			self.updateWeights(BMU)
-
 	def updateWeights(self):
 		'''
 		Updates the weight of the neurons of the SOM Map
@@ -135,6 +131,16 @@ class SOM_Map:
 		'''
 		dist=np.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 		return dist
+
+	def fit(self):
+		'''
+		Primary starting function of the Self Organizing Maps Network
+		Similar to fit function of sklearn library
+		'''
+		for i in range(self.num_iteration):
+			for j in range(len(x_train)):
+				BMU=self.findBestMatchingUnit()
+				self.updateWeights(BMU)
 
 
 
