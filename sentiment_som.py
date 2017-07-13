@@ -19,8 +19,8 @@ def load_data():
     x_test = x[train_len:]
     y_test = y[train_len:]
     embedding_weights = train_word2vec(np.vstack((x_train, x_test)), vocabulary_inv, num_features=300, min_word_count=1, context=10)
-    x_train=[[embedding_weights[j] for j in i] for i in x_train]
-    x_test=[[embedding_weights[j] for j in i] for i in x_test]
+    x_train=np.array([[embedding_weights[j] for j in i] for i in x_train])
+    x_test=np.array([[embedding_weights[j] for j in i] for i in x_test])
 
     return x_train, y_train, x_test, y_test, vocabulary_inv
 

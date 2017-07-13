@@ -8,7 +8,7 @@ from sentiment_som import load_data
 from w2v import train_word2vec
 
 #Kernel Parameters
-size_x=3			#size of 1 kernel
+size_x=n_gram=3			#size of 1 kernel and convolution parameter
 size_y=300
 
 #SOM Map parameters
@@ -23,9 +23,6 @@ embedding_dim=300
 min_word_count=1
 context=10
 
-#Convolution parameters
-ngram=3
-
 #Loads the dataset matrices, the Word2Vec weights and the vocabulary
 x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
 embedding_weights = train_word2vec(np.vstack((x_train, x_test)), vocabulary_inv, num_features=embedding_dim,
@@ -35,9 +32,8 @@ print len(x_train)
 
 
 class SOM_Map:
-	def __init__(self,nKernel_y,nKernel_x,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
+	def __init__(self,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
 		self.nKernel_y=nKernel_y
-		self.nKernel_x=nKernel_x
 		self.size_y=size_y
 		self.size_x=size_x
 		self.learning_rate=learning_rate
@@ -50,34 +46,30 @@ class SOM_Map:
 		self.x_train, self.y_train, self.x_test, self.y_test, self.vocabulary_inv = load_data()
 
 		#Set random weights for SOM Map
+		print "Intializing kernels of the Self Organizing Map"
 		self.map=self.setRandomWeights()
 
 	def setRandomWeights(self):
 		'''
 		Returns a map of Randomly initiated weights
 		'''
-		kernels=[[self.get_kernel(size_y,size_x) for j in range(nKernel_y)] for i in range(nKernel_x)]
+		kernels=np.array([self.get_kernel(size_x,size_y) for i in range(nKernel_y)])
 		return kernels
 
 	def get_kernel(self,size_y,size_x):
 		'''
 		Returns a kernel of size_y rows and size_x columns
 		'''
-		kernel=np.random.random_sample((self.size_y,self.size_x))
+		kernel=np.random.random_sample((size_y,size_x))
 		return kernel
 
 	def getEuclideanDistance(self,a,b):
 		'''
 		Returns the Euclidean Distance between 2 Matrices
 		'''
-		total=0
-		for i in range(self.size_y):
-			for j in range(self.size_x):
-				total+=(a[i][j]-b[i][j])**2
+		return np.linalg.norm(a-b)
 
-		return np.sqrt(total)
-
-	def findBestMatchingUnit(self):
+	def findBestMatchingUnit(self,inp):
 		'''
 		This function finds the winning neuron
 		'''
@@ -85,44 +77,26 @@ class SOM_Map:
  		BMUCoordinates=[]
 
  		for i in range(nKernel_y):
- 			for j in range(nKernel_x):
- 				kernelDist=self.getEuclideanDistance(self.map[i][j],inp) #Need work here because there is no input dataset at present
+			kernelDist=self.getEuclideanDistance(self.map[i],inp)
+			if kernelDist<euclidDist:
+				euclidDist=kernelDist
+				BMUCoordinates=i
 
- 				if kernelDist<euclidDist:
- 					euclidDist=kernelDist
- 					BMUCoordinates=[i,j]
+		return BMUCoordinates
 
- 		return BMUCoordinates
-
-	def updateWeights(self):
+	def updateWeights(self,BMUCoordinates,currentVector):
 		'''
 		Updates the weight of the neurons of the SOM Map
+		:params
+		BMUCoordinates: Integer : Position of BMU Matrix
+		currentVector: 3x300 Matrix containing current Input vector
 		'''
 
 		for i in range(nKernel_y):
-			for j in range(nKernel_x):
-				dist=self.distanceBetweenKernels(BMU,[i,j])
-				eta=np.exp(-(dist)**2/(2*(self.sigma)**2))
-				self.learningRateDecay()
-				self.map[i][j]+=(eta*self.learning_rate*(inp-self.map[i][j]))
-		return eta
+			dist=self.getEuclideanDistance(BMUCoordinates,i)
+			theta=np.exp(-(dist)**2/(2*(self.sigma)**2))
+			self.map[i]+=(theta * self.learning_rate*(currentVector-self.map[i]))
 
-	def getNeighbourRadius(self):
-		'''
-		Returns the radius of the neighbours to update the weights
-		i.e Decay function for sigma.
-		'''
-		self.sigma=max(nKernel_x,nKernel_y)/2
-		self.timeConstant=num_iteration/np.log(self.sigma)
-		self.sigma=self.sigma * np.exp(-self.iterationCount/float(self.timeConstant))
-		self.iterationCount+=1
-		return self.sigma
-
-	def learningRateDecay(self,iterationCount):
-		'''
-		Decay function for Learning Rate
-		'''
-		self.learning_rate=self.learning_rate * np.exp(-iterationCount/float(self.timeConstant))
 
 	def distBetweenKernels(self,a,b):
 		'''
@@ -134,19 +108,35 @@ class SOM_Map:
 		dist=np.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 		return dist
 
-	def fit(self):
+	def sigmaDecay(self,iterationCount):
+		'''
+		Returns the radius of the neighbours to update the weights
+		i.e Decay function for sigma.
+		'''
+		self.timeConstant=self.num_iteration/np.log(self.sigma)
+		self.sigma=self.sigma * np.exp(-iterationCount/float(self.timeConstant))
+
+	def learningRateDecay(self,iterationCount):
+		'''
+		Decay function for Learning Rate
+		'''
+		self.learning_rate=self.learning_rate * np.exp(-iterationCount/float(self.num_iteration))
+
+	def run(self):
 		'''
 		Primary starting function of the Self Organizing Maps Network
 		Similar to fit function of sklearn library
 		'''
 		for i in range(self.num_iteration):
-			self.
-			for j in range(len(x_train)):
-				BMU=self.findBestMatchingUnit()
-				self.updateWeights(BMU)
-
+			self.sigmaDecay(i)
+			self.learningRateDecay(i)
+			for j in x_train:
+				for k in range(len(j)-self.size_x):
+					currentVector=j[k:k+self.size_x]
+					BMUCoordinates=self.findBestMatchingUnit(currentVector)
+					self.updateWeights(BMUCoordinates,currentVector)
 
 
 if __name__=="__main__":
-	som=SOM_Map(nKernel_x,nKernel_y,size_y,size_x,learning_rate,sigma)
-	pprint(som.map)
+	som=SOM_Map(nKernel_y,size_y,size_x,learning_rate,sigma)
+	som.run()
