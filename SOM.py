@@ -46,9 +46,10 @@ class SOM_Map:
 		#Total no. of iterations for the model
 		self.num_iteration=num_iteration
 
-		#Iteration count for finding the value of sigma
-		self.iterationCount=1
+		#Load input data matrices
+		self.x_train, self.y_train, self.x_test, self.y_test, self.vocabulary_inv = load_data()
 
+		#Set random weights for SOM Map
 		self.map=self.setRandomWeights()
 
 	def setRandomWeights(self):
@@ -109,6 +110,7 @@ class SOM_Map:
 	def getNeighbourRadius(self):
 		'''
 		Returns the radius of the neighbours to update the weights
+		i.e Decay function for sigma.
 		'''
 		self.sigma=max(nKernel_x,nKernel_y)/2
 		self.timeConstant=num_iteration/np.log(self.sigma)
@@ -116,11 +118,11 @@ class SOM_Map:
 		self.iterationCount+=1
 		return self.sigma
 
-	def learningRateDecay(self):
+	def learningRateDecay(self,iterationCount):
 		'''
 		Decay function for Learning Rate
 		'''
-		self.learning_rate=self.learning_rate * np.exp(-self.iterationCount/float(self.timeConstant))
+		self.learning_rate=self.learning_rate * np.exp(-iterationCount/float(self.timeConstant))
 
 	def distBetweenKernels(self,a,b):
 		'''
@@ -138,6 +140,7 @@ class SOM_Map:
 		Similar to fit function of sklearn library
 		'''
 		for i in range(self.num_iteration):
+			self.
 			for j in range(len(x_train)):
 				BMU=self.findBestMatchingUnit()
 				self.updateWeights(BMU)
