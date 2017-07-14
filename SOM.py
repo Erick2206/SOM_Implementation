@@ -2,6 +2,7 @@
 This file is an implementation of the SOM algorithm
 '''
 
+import time
 import numpy as np
 from pprint import pprint
 from sentiment_som import load_data
@@ -17,18 +18,12 @@ nKernel_y=100 		#No of kernels on x and y axis on a SOM Map.
 #Training parameters
 learning_rate=0.1
 sigma=0.3
+num_iteration=3
 
 #Word2Vec parameters
 embedding_dim=300
 min_word_count=1
 context=10
-
-#Loads the dataset matrices, the Word2Vec weights and the vocabulary
-x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
-embedding_weights = train_word2vec(np.vstack((x_train, x_test)), vocabulary_inv, num_features=embedding_dim,
-								   min_word_count=min_word_count, context=context)
-
-print len(x_train)
 
 
 class SOM_Map:
@@ -43,6 +38,7 @@ class SOM_Map:
 		self.num_iteration=num_iteration
 
 		#Load input data matrices
+		print "In Init"
 		self.x_train, self.y_train, self.x_test, self.y_test, self.vocabulary_inv = load_data()
 
 		#Set random weights for SOM Map
@@ -127,16 +123,21 @@ class SOM_Map:
 		Primary starting function of the Self Organizing Maps Network
 		Similar to fit function of sklearn library
 		'''
+		print "Running Self Organizing Map Neural Network"
 		for i in range(self.num_iteration):
+			print "Iteration #",i
+			t1=time.time()
 			self.sigmaDecay(i)
 			self.learningRateDecay(i)
-			for j in x_train:
+			for j in self.x_train:
 				for k in range(len(j)-self.size_x):
 					currentVector=j[k:k+self.size_x]
 					BMUCoordinates=self.findBestMatchingUnit(currentVector)
 					self.updateWeights(BMUCoordinates,currentVector)
 
+			print "Iteration %d took: %d secs" % (i,time.time()-t1)
+
 
 if __name__=="__main__":
-	som=SOM_Map(nKernel_y,size_y,size_x,learning_rate,sigma)
+	som=SOM_Map(nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
 	som.run()

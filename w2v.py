@@ -20,6 +20,7 @@ def train_word2vec(sentence_matrix, vocabulary_inv,
         embedding_weights = word2vec.Word2Vec.load(model_name)
         print('Load existing Word2Vec model \'%s\'' % split(model_name)[-1])
     else:
+        print "Making new vector"
         embedding_weights=KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
         # Saving the model for later use. You can load it later using Word2Vec.load()
         if not exists(model_dir):
