@@ -26,7 +26,7 @@ min_word_count=1
 context=10
 
 
-class SOM_Map:
+class SOM_Map_Layer1:
 	def __init__(self,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
 		self.nKernel_y=nKernel_y
 		self.size_y=size_y
@@ -136,6 +136,28 @@ class SOM_Map:
 					self.updateWeights(BMUCoordinates,currentVector)
 
 			print "Iteration %d took: %d secs" % (i,time.time()-t1)
+
+class CorrCoef_Layer2:
+	def __init__(self,inp,som_kernels):
+		'''
+		Init for the 2nd layer of the Neural Network
+		:params
+		inp: Word2Vec for the input sentences
+		som_kernels: Weights of the kernel learnt in the prevous layer
+		'''
+
+		self.input=inp
+		self.map=weights
+
+	def findCorrelationCoeff(self,a,b):
+		'''
+		Finds the correlation coefficient
+		between two 2D Matrices
+		:params
+		a: Input(Word2Vec) ngram
+		b: Learnt weights
+		'''
+
 
 
 if __name__=="__main__":
