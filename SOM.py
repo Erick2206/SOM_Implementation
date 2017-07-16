@@ -26,6 +26,7 @@ min_word_count=1
 context=10
 
 
+
 class SOM_Map_Layer1:
 	def __init__(self,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
 		self.nKernel_y=nKernel_y
@@ -137,8 +138,10 @@ class SOM_Map_Layer1:
 
 			print "Iteration %d took: %d secs" % (i,time.time()-t1)
 
+
+
 class CorrCoef_Layer2:
-	def __init__(self,inp,som_kernels):
+	def __init__(self,inp,som_kernels,size_x):
 		'''
 		Init for the 2nd layer of the Neural Network
 		:params
@@ -148,6 +151,7 @@ class CorrCoef_Layer2:
 
 		self.input=inp
 		self.map=weights
+		self.size_x=size_x
 
 	def findCorrelationCoeff(self,a,b):
 		'''
@@ -156,8 +160,33 @@ class CorrCoef_Layer2:
 		:params
 		a: Input(Word2Vec) ngram
 		b: Learnt weights
+		returns correlation coefficient between 2 matrices
 		'''
 
+		return np.corrcoef(a,b)[0][1]
+
+	def makeCorrCoefList(self):
+		corrCoefList=[]
+		for i in self.input:
+			sentenceLevelList=[]
+			for j in range(len(i)-self.size_x):
+				ngramLevelList=[]
+				for k in self.map:
+					ngramLevelList.append(findCorrelationCoeff(j,k))
+
+			sentenceLevelList.append(ngramLevelList)
+
+		corrCoefList.append(sentenceLevelList)
+
+		return corrCoefList
+
+	def run(self):
+		self.corrCoefList=self.makeCorrCoefList()
+
+
+class MaxPooling_Layer3:
+	def __init__(self,corrCoefList):
+		self.corrCoefList=corrCoefList
 
 
 if __name__=="__main__":
