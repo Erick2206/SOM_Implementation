@@ -25,10 +25,14 @@ embedding_dim=300
 min_word_count=1
 context=10
 
-
+#Load input data matrices
+print "In main fucntion"
+x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
+inp=[x_train,y_train,x_test,y_test,vocabulary_inv]
 
 class SOM_Map_Layer1:
-	def __init__(self,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
+	def __init__(self,inp,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
+		self.x_train, self.y_train, self.x_test, self.y_test, self.vocabulary_inv=inp
 		self.nKernel_y=nKernel_y
 		self.size_y=size_y
 		self.size_x=size_x
@@ -37,10 +41,6 @@ class SOM_Map_Layer1:
 
 		#Total no. of iterations for the model
 		self.num_iteration=num_iteration
-
-		#Load input data matrices
-		print "In Init"
-		self.x_train, self.y_train, self.x_test, self.y_test, self.vocabulary_inv = load_data()
 
 		#Set random weights for SOM Map
 		print "Intializing kernels of the Self Organizing Map"
@@ -123,6 +123,7 @@ class SOM_Map_Layer1:
 		'''
 		Primary starting function of the Self Organizing Maps Network
 		Similar to fit function of sklearn library
+		returns: Trained SOM Map
 		'''
 		print "Running Self Organizing Map Neural Network"
 		for i in range(self.num_iteration):
@@ -138,9 +139,9 @@ class SOM_Map_Layer1:
 
 			print "Iteration %d took: %d secs" % (i,time.time()-t1)
 
+		return self.map
 
-
-class CorrCoef_Layer2:
+class CorrCoef_Max_pooling_Layer2_3:
 	def __init__(self,inp,som_kernels,size_x):
 		'''
 		Init for the 2nd layer of the Neural Network
@@ -174,21 +175,30 @@ class CorrCoef_Layer2:
 				for k in self.map:
 					ngramLevelList.append(findCorrelationCoeff(j,k))
 
-			sentenceLevelList.append(ngramLevelList)
+			sentenceLevelList.append(max(ngramLevelList))
 
 		corrCoefList.append(sentenceLevelList)
 
-		return corrCoefList
+		return np.array(corrCoefList)
 
 	def run(self):
 		self.corrCoefList=self.makeCorrCoefList()
 
-
-class MaxPooling_Layer3:
-	def __init__(self,corrCoefList):
-		self.corrCoefList=corrCoefList
+		return self.corrCoefList
 
 
 if __name__=="__main__":
-	som=SOM_Map(nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
-	som.run()
+	'''
+	Train first layer to fix the weights of the SOM map,
+	by inputting the Word2Vec values of the sentences
+	'''
+	som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
+	trained_weights,inp=som.run()
+
+	'''
+	Use the weights trained in the previous layer to
+	find the correlation coefficient of the trained weights
+	with the input and do the Max Pooling
+	'''
+	corrCoefList=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
+	pprint(corrCoefList)
