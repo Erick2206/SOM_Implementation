@@ -7,6 +7,7 @@ import numpy as np
 from pprint import pprint
 from sentiment_som import load_data
 from w2v import train_word2vec
+from os.path import exists
 
 #Kernel Parameters
 size_x=n_gram=3			#size of 1 kernel and convolution parameter
@@ -18,7 +19,7 @@ nKernel_y=100 		#No of kernels on x and y axis on a SOM Map.
 #Training parameters
 learning_rate=0.1
 sigma=0.3
-num_iteration=3
+num_iteration=1
 
 #Word2Vec parameters
 embedding_dim=300
@@ -26,7 +27,7 @@ min_word_count=1
 context=10
 
 #Load input data matrices
-print "In main fucntion"
+print "In main function"
 x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
 inp=[x_train,y_train,x_test,y_test,vocabulary_inv]
 
@@ -173,7 +174,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 			for j in range(len(i)-self.size_x):
 				ngramLevelList=[]
 				for k in self.map:
-					ngramLevelList.append(findCorrelationCoeff(j,k))
+					ngramLevelList.append(self.findCorrelationCoeff(j,k))
 
 			sentenceLevelList.append(max(ngramLevelList))
 
@@ -192,8 +193,16 @@ if __name__=="__main__":
 	Train first layer to fix the weights of the SOM map,
 	by inputting the Word2Vec values of the sentences
 	'''
-	som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
-	trained_weights,inp=som.run()
+	if exists('trained_weights.npy'):
+		trained_weights=np.load(trained_weights.npy)
+
+	else:
+		som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
+		trained_weights=som.run()
+		np.save('trained_weights',trained_weights)
+
+	print trained_weights.shape
+	print inp.shape
 
 	'''
 	Use the weights trained in the previous layer to
