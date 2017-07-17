@@ -151,6 +151,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 		som_kernels: Weights of the kernel learnt in the prevous layer
 		'''
 
+		print "Computing correlation coefficient..."
 		self.input=inp
 		self.map=som_kernels
 		self.size_x=size_x
@@ -211,5 +212,7 @@ if __name__=="__main__":
 	find the correlation coefficient of the trained weights
 	with the input and do the Max Pooling
 	'''
-	corrCoefList=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
-	pprint(corrCoefList)
+	cc=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
+	corrCoefList=cc.run()
+	pprint(corrCoefList[1])
+	print corrCoefList.shape
