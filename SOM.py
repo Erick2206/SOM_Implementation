@@ -152,7 +152,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 		'''
 
 		self.input=inp
-		self.map=weights
+		self.map=som_kernels
 		self.size_x=size_x
 
 	def findCorrelationCoeff(self,a,b):
