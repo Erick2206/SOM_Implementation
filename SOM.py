@@ -194,15 +194,17 @@ if __name__=="__main__":
 	by inputting the Word2Vec values of the sentences
 	'''
 	if exists('trained_weights.npy'):
+		print "Loading weights"
 		trained_weights=np.load(trained_weights.npy)
 
 	else:
+		print "Creating new weights"
 		som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
 		trained_weights=som.run()
 		np.save('trained_weights',trained_weights)
 
 	print trained_weights.shape
-	print inp.shape
+	print inp[0].shape
 
 	'''
 	Use the weights trained in the previous layer to
