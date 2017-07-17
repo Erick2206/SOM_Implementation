@@ -28,8 +28,6 @@ context=10
 
 #Load input data matrices
 print "In main function"
-x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
-inp=[x_train,y_train,x_test,y_test,vocabulary_inv]
 
 class SOM_Map_Layer1:
 	def __init__(self,inp,nKernel_y,size_y,size_x,learning_rate=0.1,sigma=0.3,num_iteration=10000):
@@ -152,7 +150,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 		'''
 
 		print "Computing correlation coefficient..."
-		self.input=inp
+		self.input=inp[0]
 		self.map=som_kernels
 		self.size_x=size_x
 
@@ -170,12 +168,14 @@ class CorrCoef_Max_pooling_Layer2_3:
 
 	def makeCorrCoefList(self):
 		corrCoefList=[]
+		#Iterate over sentences
 		for i in self.input:
 			sentenceLevelList=[]
+			#Iterate over ngrams
 			for j in range(len(i)-self.size_x):
 				ngramLevelList=[]
 				for k in self.map:
-					ngramLevelList.append(self.findCorrelationCoeff(j,k))
+					ngramLevelList.append(self.findCorrelationCoeff(i[j:j+size_x],k))
 
 			sentenceLevelList.append(max(ngramLevelList))
 
@@ -194,12 +194,25 @@ if __name__=="__main__":
 	Train first layer to fix the weights of the SOM map,
 	by inputting the Word2Vec values of the sentences
 	'''
+	input_exists=False
+	weights_exist=False
+	if exists('input.npy'):
+		inp=np.load('input.npy')
+		input_exists=True
+
 	if exists('trained_weights.npy'):
 		print "Loading weights"
 		trained_weights=np.load("trained_weights.npy")
+		weights_exist=True
 
-	else:
-		print "Creating new weights"
+	if not input_exists:
+		print "Loading data"
+		x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
+		inp=[x_train,y_train,x_test,y_test,vocabulary_inv]
+		np.save('input',np.asarray(inp))
+
+	if not weights_exist:
+		print "Training weights"
 		som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
 		trained_weights=som.run()
 		np.save('trained_weights',trained_weights)
@@ -216,3 +229,4 @@ if __name__=="__main__":
 	corrCoefList=cc.run()
 	pprint(corrCoefList[1])
 	print corrCoefList.shape
+	np.save('corrCoef',corrCoefList)

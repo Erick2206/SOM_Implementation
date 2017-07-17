@@ -17,7 +17,7 @@ def train_word2vec(sentence_matrix, vocabulary_inv,
     model_name = "{:d}features_{:d}minwords_{:d}context".format(num_features, min_word_count, context)
     model_name = join(model_dir, model_name)
     if exists(model_name):
-        embedding_weights = word2vec.Word2Vec.load(model_name)
+        embedding_weights = KeyedVectors.load(model_name)
         print('Load existing Word2Vec model \'%s\'' % split(model_name)[-1])
     else:
         print "Making new vector"
