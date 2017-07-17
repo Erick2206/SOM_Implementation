@@ -195,7 +195,7 @@ if __name__=="__main__":
 	'''
 	if exists('trained_weights.npy'):
 		print "Loading weights"
-		trained_weights=np.load(trained_weights.npy)
+		trained_weights=np.load("trained_weights.npy")
 
 	else:
 		print "Creating new weights"
