@@ -151,6 +151,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 
 		print "Computing correlation coefficient..."
 		self.input=inp[0]
+		self.input=self.input[:10]
 		self.map=som_kernels
 		self.size_x=size_x
 
@@ -168,18 +169,21 @@ class CorrCoef_Max_pooling_Layer2_3:
 
 	def makeCorrCoefList(self):
 		corrCoefList=[]
+		x=0
 		#Iterate over sentences
 		for i in self.input:
+			x+=1
+			print x
 			sentenceLevelList=[]
 			#Iterate over ngrams
-			for j in range(len(i)-self.size_x):
+			for j in range(len(i)-self.size_x+1):
 				ngramLevelList=[]
 				for k in self.map:
 					ngramLevelList.append(self.findCorrelationCoeff(i[j:j+size_x],k))
 
-			sentenceLevelList.append(max(ngramLevelList))
-
-		corrCoefList.append(sentenceLevelList)
+				sentenceLevelList.append(max(ngramLevelList))
+	
+			corrCoefList.append(sentenceLevelList)
 
 		return np.array(corrCoefList)
 
@@ -227,6 +231,6 @@ if __name__=="__main__":
 	'''
 	cc=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
 	corrCoefList=cc.run()
-	pprint(corrCoefList[1])
+	pprint(corrCoefList)
 	print corrCoefList.shape
-	np.save('corrCoef',corrCoefList)
+#	np.save('corrCoef',corrCoefList)
