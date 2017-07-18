@@ -151,7 +151,7 @@ class CorrCoef_Max_pooling_Layer2_3:
 
 		print "Computing correlation coefficient..."
 		self.input=inp[0]
-		self.input=self.input[:10]
+#		self.input=self.input[:10]
 		self.map=som_kernels
 		self.size_x=size_x
 
@@ -229,8 +229,12 @@ if __name__=="__main__":
 	find the correlation coefficient of the trained weights
 	with the input and do the Max Pooling
 	'''
-	cc=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
-	corrCoefList=cc.run()
-	pprint(corrCoefList)
-	print corrCoefList.shape
-#	np.save('corrCoef',corrCoefList)
+	if not exists('corrCoef.npy'):
+		cc=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
+		corrCoefList=cc.run()
+		pprint(corrCoefList)
+		print corrCoefList.shape
+		np.save('corrCoef',corrCoefList)
+
+	else:
+		corrCoefList=np.load('corrCoef.npy')

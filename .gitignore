@@ -3,3 +3,4 @@ GoogleNews-vectors-negative300.bin
 sentiment_som.pyc
 w2v.pyc
 input.npy
+corrCoef.npy
