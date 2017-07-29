@@ -19,7 +19,7 @@ nKernel_y=100 		#No of kernels on x and y axis on a SOM Map.
 #Training parameters
 learning_rate=0.1
 sigma=0.3
-num_iteration=1
+num_iteration=5
 
 #Word2Vec parameters
 embedding_dim=300
@@ -201,22 +201,23 @@ if __name__=="__main__":
 	input_exists=False
 	weights_exist=False
 	if exists('input.npy'):
+		print "Loading saved input data."
 		inp=np.load('input.npy')
 		input_exists=True
 
 	if exists('trained_weights.npy'):
-		print "Loading weights"
+		print "Loading saved weights."
 		trained_weights=np.load("trained_weights.npy")
 		weights_exist=True
 
 	if not input_exists:
-		print "Loading data"
+		print "Loading data from scratch."
 		x_train, y_train, x_test, y_test, vocabulary_inv = load_data()
 		inp=[x_train,y_train,x_test,y_test,vocabulary_inv]
 		np.save('input',np.asarray(inp))
 
 	if not weights_exist:
-		print "Training weights"
+		print "Training weights from scratch."
 		som=SOM_Map_Layer1(inp,nKernel_y,size_y,size_x,learning_rate,sigma,num_iteration)
 		trained_weights=som.run()
 		np.save('trained_weights',trained_weights)
@@ -230,6 +231,7 @@ if __name__=="__main__":
 	with the input and do the Max Pooling
 	'''
 	if not exists('corrCoef.npy'):
+		print "Creating correlation coefficient from scratch."
 		cc=CorrCoef_Max_pooling_Layer2_3(inp,trained_weights,size_x)
 		corrCoefList=cc.run()
 		pprint(corrCoefList)
@@ -237,4 +239,5 @@ if __name__=="__main__":
 		np.save('corrCoef',corrCoefList)
 
 	else:
+		print "Loading saved correlation coefficient."
 		corrCoefList=np.load('corrCoef.npy')
